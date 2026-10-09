@@ -1,0 +1,32 @@
+# 依赖目录：由包管理器按 package.json 重建，不进版本控制
+node_modules/
+.pnpm-store/
+
+# 打包产物：tarball 是发布时生成的，源码仓库里不需要
+*.tgz
+*.tar.gz
+pack/
+
+# 环境变量文件：这类文件最容易藏密钥
+.env
+.env.*
+!.env.example
+
+# 日志与临时文件
+*.log
+npm-debug.log*
+pnpm-debug.log*
+*.tmp
+*.bak
+
+# 编辑器与系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 给本地测试留的位置（个人配置、临时脚本等）
+# 约定：本地私有的东西放这里，永不提交
+.local/
+scratch/

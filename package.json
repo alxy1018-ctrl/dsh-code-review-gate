@@ -1,0 +1,45 @@
+{
+  "name": "dsh-code-review-gate",
+  "version": "0.1.0",
+  "description": "代码工程评审闸门：动手前先分析需求、取千问第二意见，把「先评审再动手」变成每轮生效的纪律（DeepSeek Harness 插件）",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./qwen-client": "./lib/qwen-client.js"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "author": "REPLACE_WITH_YOUR_NAME",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "code-review",
+    "review-gate",
+    "qwen",
+    "cordis",
+    "agent"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate/issues"
+  },
+  "homepage": "https://github.com/REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

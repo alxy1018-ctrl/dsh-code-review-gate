@@ -1,0 +1,7 @@
+# dsh-code-review-gate bundle patch
+#
+# 装成 profile 依赖时，这一行把插件挂进配置树。
+# 注意：这是 insert，不要再在 cordis.patch.yml 里写同 id 的顶层条目，否则会重复注册。
+- insert:
+    - id: code-review-gate
+      name: 'dsh-code-review-gate'
