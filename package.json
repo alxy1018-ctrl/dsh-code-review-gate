@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "license": "MIT",
-  "author": "REPLACE_WITH_YOUR_NAME",
+  "author": "alxy1018-ctrl",
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -28,12 +28,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate.git"
+    "url": "git+https://github.com/alxy1018-ctrl/dsh-code-review-gate.git"
   },
   "bugs": {
-    "url": "https://github.com/REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate/issues"
+    "url": "https://github.com/alxy1018-ctrl/dsh-code-review-gate/issues"
   },
-  "homepage": "https://github.com/REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate#readme",
+  "homepage": "https://github.com/alxy1018-ctrl/dsh-code-review-gate#readme",
   "engines": {
     "node": ">=20"
   },

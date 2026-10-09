@@ -24,7 +24,7 @@ dsh plugin --profile desktop add dsh-code-review-gate
 ### 从 GitHub
 
 ```powershell
-dsh plugin --profile desktop add github:REPLACE_WITH_YOUR_GITHUB_USERNAME/dsh-code-review-gate
+dsh plugin --profile desktop add github:alxy1018-ctrl/dsh-code-review-gate
 ```
 
 插件管理器识别 `github:` / `git+` / `git@` 等来源；这条路需要机器上有 `git`。
