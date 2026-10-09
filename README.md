@@ -13,21 +13,25 @@ DSH 的**代码工程评审闸门**：收到会导致代码产出或工程结论
 
 ## 安装
 
-### 从 npm（推荐，换机器最省事）
-
-```powershell
-dsh plugin --profile desktop add dsh-code-review-gate
-```
-
-一条命令完成：装包 + 自动写进 profile 的 `bundles` 栈。**开新会话即生效**，不用重启客户端。
-
-### 从 GitHub
+### 从 GitHub（当前可用）
 
 ```powershell
 dsh plugin --profile desktop add github:alxy1018-ctrl/dsh-code-review-gate
 ```
 
-插件管理器识别 `github:` / `git+` / `git@` 等来源；这条路需要机器上有 `git`。
+插件管理器识别 `github:` / `git+` / `git@` 等来源。
+
+> ⚠️ **这条路要求 `git` 已经装好，而且 DSH 是在装完 git 之后启动的。**
+> 详见下面的[换新电脑后的恢复清单](#换新电脑后的恢复清单)——那里有一个会让整个安装失败的坑。
+
+### 从 npm（尚未发布）
+
+```powershell
+dsh plugin --profile desktop add dsh-code-review-gate
+```
+
+包名 `dsh-code-review-gate` 在 npm 上**目前还空着，尚未发布**。等发布之后这条命令可用，
+好处是不依赖 `git`、命令更短。在那之前请用上面的 GitHub 方式。
 
 ### 从本地目录（开发时）
 
@@ -47,22 +51,73 @@ dsh plugin --profile desktop add 'link:D:\Code\dsh-code-review-gate'
 
 ### 换新电脑后的恢复清单
 
-| 步骤 | 命令 / 操作 |
-|---|---|
-| 1. 装 DSH | 正常安装客户端 |
-| 2. 装插件 | `dsh plugin --profile desktop add dsh-code-review-gate` |
-| 3. 配千问凭据 | 设置 → 模型 → 给 `dashscope` 或 token plan 路由填 Key（界面写入凭据库，配置文件里不留密钥） |
-| 4. 配模型路由（可选，用于子代理并行） | 设置 → 插件 → 子智能体 → 授权千问的模型路由 |
-| 5. 开新会话 | 策略段与技能在这个新会话里自动生效 |
+**顺序不能变。** 第 2、3 步是实测踩出来的，跳过的结果是安装失败，而且报错信息会把你引向错误的方向。
 
-第 3 步之后可以先自检：
+| 步骤 | 命令 / 操作 | 为什么 |
+|---|---|---|
+| 1. 装 DSH | 正常安装客户端 | — |
+| 2. **装 git** | `winget install --id Git.Git --exact`，或从官网下安装包 | 从 GitHub 装插件要 `git ls-remote`，没它装不了 |
+| 3. **重启 DSH 客户端** | 完全退出再打开 | ⚠️ **关键**：DSH 进程的环境变量在启动时固定。git 安装器把路径写进**机器级 PATH**，但**已经在跑的 DSH 看不到**，于是它 spawn 的 `git` 找不到 |
+| 4. 装插件 | `dsh plugin --profile desktop add github:alxy1018-ctrl/dsh-code-review-gate` | 装依赖 + 自动登记 bundle 栈 |
+| 5. 加千问模型路由 | 设置 → 模型 → 添加模型提供商：Provider ID 用 `qwen-token-plan-individual`，端点 `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1`，协议选 OpenAI Chat Completions | 客户端默认按这个 ID 找路由与凭据 |
+| 6. 填 API Key | 同一张卡片里填入千问 token plan 的 Key | 写进凭据库；配置文件里不留密钥 |
+| 7. （可选）授权子代理路由 | 设置 → 插件 → 子智能体 → 授权千问的模型 | 只有"派子代理并行写模块"那一节需要 |
+| 8. 开新会话 | — | 策略段与技能在新会话里生效 |
 
-```powershell
-$payload = '{"stage":"requirement","request":"测试","analysis":"测试分析"}' 
-$payload | & '<DSH自带node>' '<插件目录>\lib\qwen-client.js'
+#### 第 3 步为什么不能省（以及那个骗人的报错）
+
+不重启 DSH 直接跑第 4 步，你会看到：
+
+```
+[ERROR] Command failed with exit code 1:
+        git ls-remote "https://github.com/.../dsh-code-review-gate.git" HEAD
+        'git' 不是内部或外部命令，也不是可运行的程序
 ```
 
-打印出 `[千问评审 · …]` 就说明通道通了。
+而 DSH 自己给出的总结性提示是这样的：
+
+```
+dsh: git-hosted plugins build on install via their prepare script, which pnpm
+     blocks until allowed — add the exact key pnpm printed above under allowBuilds
+```
+
+**这条提示是错的**，跟 `allowBuilds` 毫无关系。真实原因只有一个：**DSH 进程的 PATH 里没有 git**。
+去改 `pnpm-workspace.yaml` 只会白费功夫。**重启 DSH 即可解决。**
+
+> 如果重启后仍然报同样的错，手动确认 git 可见：
+> ```powershell
+> Get-Command git        # 应输出 C:\Program Files\Git\cmd\git.exe
+> ```
+> 若查不到，说明 git 安装没写 PATH，手动加 `C:\Program Files\Git\cmd` 后再重启 DSH。
+
+#### 第 4 步的两个陷阱
+
+**陷阱一：不要用 `pnpm add` 代替 `dsh plugin add`。**
+底层 `pnpm add` 只装依赖，**不会把包登记进 profile 的 `bundles` 栈**，结果是：文件全在、依赖也列了，
+但**插件静默不加载**——技能目录里没有它，而且**不报任何错**。官方命令会做"装依赖 + 登记 bundle"两步。
+
+**陷阱二：验证安装是否真的成功。**
+不要只看命令退出码。装完检查 profile 的 `bundles` 数组里有没有这个包：
+
+```powershell
+(Get-Content "$env:USERPROFILE\.dsh\profiles\desktop\package.json" -Raw | ConvertFrom-Json).dsh.profile.bundles
+```
+
+应该看到 `dsh-code-review-gate` 在里面。没有就说明没登记成功。
+
+#### 装完自检
+
+把 `<插件目录>` 换成实际安装位置（通常是
+`%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-code-review-gate`）：
+
+```powershell
+$payload = '{"stage":"requirement","request":"测试","analysis":"测试分析"}'
+$payload | & "$env:USERPROFILE\.dsh\dsh-runtimes\dsh-primary-runtime\dependencies\node\bin\node.exe" `
+              "$env:USERPROFILE\.dsh\profiles\desktop\node_modules\dsh-code-review-gate\lib\qwen-client.js"
+```
+
+打印出 `[千问评审 · …]` 就说明**凭据解析 + 网络 + 模型路由**整条链路通了。
+如果报 `找不到千问凭据`，回到第 6 步确认 Key 填了。
 
 ### 生效方式
 
@@ -176,6 +231,22 @@ dsh plugin --profile <名> add 'link:<目录>'   # 装成包名，由 bundle 栈
   想读 asar 要么用 `process._linkedBinding('electron_common_asar')`，要么先把文件复制成非 `.asar` 后缀。
 - **GUI 子系统程序通过管道喂 stdin 读不到数据**。`echo '{}' | & 'DeepSeek Harness.exe' script.js` 会静默退出 0。
   要跑读 stdin 的脚本，用真 node：`~/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/node/bin/node.exe`。
+
+### 4.1 用 DSH 的 shell 去启动别的 Electron 应用会静默失败
+
+**症状**：启动命令退出码 0、没有任何输出，目标应用（GitHub Desktop、VS Code 之类）窗口不出现。
+
+**原因**：DSH 的 shell 环境里带着 `ELECTRON_RUN_AS_NODE=1`（宿主用它跑 Node 脚本）。
+这个变量会**让任何 Electron 应用把自己当成命令行 node**——于是它一启动就"干完活退出"，退出码 0。
+
+**解决**：启动前先清掉这个变量。
+
+```powershell
+Remove-Item Env:\ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+Start-Process "$env:LOCALAPPDATA\GitHubDesktop\GitHubDesktop.exe"
+```
+
+**为什么值得记**：它失败得**完全不报错**，很容易被误判成"程序装坏了"或"找不到快捷方式"。
 
 ### 5. 沙箱与 ACL
 
