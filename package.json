@@ -1,7 +1,7 @@
 {
   "name": "dsh-code-review-gate",
-  "version": "0.1.0",
-  "description": "代码工程评审闸门：动手前先分析需求、取千问第二意见，把「先评审再动手」变成每轮生效的纪律（DeepSeek Harness 插件）",
+  "version": "0.2.0",
+  "description": "代码工程评审闸门：动手前先分析需求、派千问子代理取第二意见，把「先评审再动手」变成每轮生效的纪律（DeepSeek Harness 插件）",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
